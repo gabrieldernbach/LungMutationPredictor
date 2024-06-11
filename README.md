@@ -11,4 +11,6 @@ Example heatmaps for predicting mutations in EGFR. Acinar and papillary growth p
 ![EGFR](EGFR.png)
 Example heatmaps for predicting mutations in TP53. High attention patches often contain solid growth pattern.
 ![TP53](TP53.png)
+
+The repository requires take a table of cases with known mutational state and location of their whole slide images and derives the following structure set of tables, including image tiling, image embedding, experiments, the training artifacts, model predictions and their explanations (attention scores). 
 ![mermaid-diagram-2024-06-11-173059](https://github.com/gabrieldernbach/LungMutationPredictor/assets/28825058/5fd03532-ae99-4cc2-af7e-efbcbb361597)
