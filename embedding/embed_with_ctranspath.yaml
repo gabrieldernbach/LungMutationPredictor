@@ -1,0 +1,131 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "schedule-ctranspath-embedding"
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  template:
+    metadata:
+      labels:
+        identifier: ""
+    spec:
+      restartPolicy: Never
+      serviceAccountName: ???
+      hostIPC: true
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-8
+          operator: Equal
+        - effect: NoSchedule
+          key: provisioning_model
+          value: spot
+          operator: Equal
+      containers:
+        - name: "python"
+          image: "gabrieldernbach/histo:schedule_embedding2"
+          imagePullPolicy: Always
+#          command: ["/bin/sh", "-c", "while true; do sleep 1000; done"] # for debugging
+          command: [ "python", "/app/main.py" ]
+          tty: true  # Allocate a TTY
+          stdin: true # Allow terminal input
+          resources:
+            requests:
+              cpu: 7
+              memory: 26G
+            limits:
+              cpu: 8
+              memory: 32G
+          env:
+            - name: BASE_PATH
+              value: "gs://bucket_name/iteration_n/data"
+            - name: EXTRACTOR_UUID
+              value: "a5cd2238-9acf-4e72-b802-42ed1e720a49"
+            - name: EMBEDDER_UUID
+              value: "364a917b-deff-4aad-ab78-49bce116713e"
+            - name: EMBEDDER_ENDPOINT
+              value: "http://ctranspath-embedder-service:8000/embed_image"
+            - name: NUM_THREADS
+              value: "64"
+            - name: NUM_PROCESSES
+              value: "8"
+--- # deploy the model with multiple replicas
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctranspath-embedder
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      app: ctranspath-embedder
+  template:
+    metadata:
+      labels:
+        app: ctranspath-embedder
+    spec:
+      serviceAccountName: ???
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-8
+          operator: Equal
+        - effect: NoSchedule
+          key: provisioning_model
+          value: spot
+          operator: Equal
+      containers:
+      - name: embedder
+        image: "gabrieldernbach/histo:ctranspath"
+        tty: true  # Allocate a TTY
+        stdin: true # Allow terminal input
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: 7
+            memory: 26G
+          limits:
+            cpu: 8
+            memory: 32G
+        env:
+          - name: NUM_CORES
+            value: "8"
+--- # expose embedder as a service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctranspath-embedder-service
+spec:
+  type: ClusterIP
+  selector:
+    app: ctranspath-embedder
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+--- # scale service by demand
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ctranspath-embedder-hpa
+  namespace: ???
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ctranspath-embedder
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 25

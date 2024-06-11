@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ??? # container name
+  labels:
+    proj: ??? # your billing account
+    user: ??? # your username
+    owner: ??? # your group
+spec:
+  template:
+    metadata:
+      labels:
+        identifier: ""
+    spec:
+      restartPolicy: Never
+      serviceAccountName: ??? # your username
+      hostIPC: true
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-64
+          operator: Equal
+        - effect: NoSchedule
+          key: provisioning_model
+          value: spot
+          operator: Equal
+      containers:
+        - name: flow-container
+          image: "pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime"
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]
+          args: []
+          resources:
+            requests:
+              cpu: 63
+              memory: 236G
+            limits:
+              cpu: 64
+              memory: 256G
+          env:
+          - name: NUM_CORES
+            value: "64"

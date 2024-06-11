@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "run-train-4"
+  namespace: ???
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  restartPolicy: Never
+  serviceAccountName: ???
+  hostIPC: true
+  tolerations:
+    - effect: NoSchedule
+      key: node_type
+      value: n1-standard-16
+      operator: Equal
+  containers:
+    - name: "python"
+      image: "gabrieldernbach/histo:training10"
+      imagePullPolicy: Always
+#          command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]
+      command: [ "python", "/app/run.py" ]
+      tty: true  # Allocate a TTY
+      stdin: true # Allow terminal input
+      resources:
+        requests:
+          cpu: 15
+          memory: 56G
+        limits:
+          cpu: 16
+          memory: 64G
+      env:
+        - name: NUM_CORES
+          value: "16"

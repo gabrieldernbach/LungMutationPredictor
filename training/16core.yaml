@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "run-train"
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  parallelism: 32  # careful this can be costly
+  completions: 32
+  template:
+    metadata:
+      labels:
+        identifier: ""
+    spec:
+      restartPolicy: Never
+      serviceAccountName: ???
+      hostIPC: true
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-16
+          operator: Equal
+      containers:
+        - name: "python"
+          image: "gabrieldernbach/histo:training9"
+          imagePullPolicy: Always
+#          command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]
+          command: [ "python", "/app/run.py" ]
+          tty: true  # Allocate a TTY
+          stdin: true # Allow terminal input
+          resources:
+            requests:
+              cpu: 15
+              memory: 56G
+            limits:
+              cpu: 16
+              memory: 64G
+          env:
+            - name: NUM_CORES
+              value: "16"

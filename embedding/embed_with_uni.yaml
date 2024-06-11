@@ -1,0 +1,141 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "schedule-uni-embedding"
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  template:
+    metadata:
+      labels:
+        identifier: ""
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: ???
+      hostIPC: true
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-16
+          operator: Equal
+        - effect: NoSchedule
+          key: provisioning_model
+          value: spot
+          operator: Equal
+      containers:
+        - name: "python"
+          image: "gabrieldernbach/histo:schedule_embedding2"
+          imagePullPolicy: Always
+#          command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]
+          command: [ "python", "/app/main.py" ]
+          tty: true  # Allocate a TTY
+          stdin: true # Allow terminal input
+          resources:
+            requests:
+              cpu: 15
+              memory: 56G
+            limits:
+              cpu: 16
+              memory: 64G
+          env:
+            - name: BASE_PATH
+              value: "gs://bucket_name/iteration_n/data"
+            - name: EXTRACTOR_UUID
+              value: "a5cd2238-9acf-4e72-b802-42ed1e720a49"
+            - name: EMBEDDER_UUID
+              value: "71291d78-02b3-48ae-bd1a-7e37c012e879"
+            - name: EMBEDDER_ENDPOINT
+              value: "http://uni-embedder-service:8000/embed_image"
+            - name: NUM_THREADS
+              value: "64"
+            - name: NUM_PROCESSES
+              value: "8"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uni-embedder
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: uni-embedder
+  template:
+    metadata:
+      labels:
+        app: uni-embedder
+    spec:
+      serviceAccountName: ???
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: nvidia.com/gpu
+          operator: Exists
+        - effect: NoSchedule
+          key: node_type
+          value: gpu-1-t4
+          operator: Equal
+        - effect: NoSchedule
+          key: disk_size
+          value: 100g
+          operator: Equal
+        - effect: NoSchedule
+          key: provisioning_model
+          value: spot
+          operator: Equal
+      containers:
+        - name: embedder
+          image: "gabrieldernbach/histo:uni-embedder-service"
+          imagePullPolicy: Always
+          tty: true  # Allocate a TTY
+          stdin: true # Allow terminal input
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: 7
+              memory: 48G
+              nvidia.com/gpu: 1
+            limits:
+              cpu: 7
+              memory: 48G
+              nvidia.com/gpu: 1
+          env:
+          - name: NUM_CORES
+            value: "8"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uni-embedder-service
+spec:
+  type: ClusterIP
+  selector:
+    app: uni-embedder
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: uni-embedder-hpa
+  namespace: gabriel
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: uni-embedder
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 25

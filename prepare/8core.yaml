@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ??? # container name
+  labels:
+    proj: ??? # your billing account
+    user: ??? # your username
+    owner: ??? # your group
+spec:
+  template:
+    metadata:
+      labels:
+        identifier: ""
+    spec:
+      restartPolicy: Never
+      serviceAccountName: ??? # your username
+      hostIPC: true
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-8
+          operator: Equal
+      containers:
+        - name: "python"
+          image: "pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime"
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]
+          tty: true  # Allocate a TTY
+          stdin: true # Allow terminal input
+          resources:
+            requests:
+              cpu: 7
+              memory: 26G
+            limits:
+              cpu: 8
+              memory: 32G
+          env:
+            - name: NUM_CORES
+              value: "8"

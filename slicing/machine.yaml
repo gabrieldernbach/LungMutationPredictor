@@ -1,0 +1,43 @@
+apiVersion: "batch/v1"
+kind: Job
+metadata:
+  name: "tiling"
+  labels:
+    proj: ???
+    user: ???
+    owner: ???
+spec:
+  template:
+    metadata:
+      labels:
+        identifier: ""
+    spec:
+      restartPolicy: OnFailure # Never
+      serviceAccountName: ???
+      tolerations:
+        - effect: NoSchedule
+          key: node_type
+          value: n1-standard-32
+          operator: Equal
+        - effect: NoSchedule
+          key: provisioning_model
+          value: spot
+          operator: Equal
+      containers:
+        - name: "python"
+          image: "gabrieldernbach/histo:wsi_splitter"
+          imagePullPolicy: Always
+          # command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]
+          command: ["python", "/app/main.py"]
+          tty: true
+          stdin: true
+          resources:
+            requests:
+              cpu: 31
+              memory: 114G
+            limits:
+              cpu: 32
+              memory: 128G
+          env:
+          - name: NUM_CORES
+            value: "32"
