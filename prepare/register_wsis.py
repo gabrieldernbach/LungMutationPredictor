@@ -6,12 +6,12 @@ import fsspec
 import pandas as pd
 
 gfs = fsspec.filesystem("gs")
-base_path = "gs://n20_10_lung_hd/ejc_review/data"
-reject = pd.read_csv("gs://n20_10_lung_hd/hd/bad_slides_anonymized.txt", header=None)[0].tolist()
+base_path = "gs://bucket_path/iteration_n/data"
+reject = pd.read_csv("gs://bucket-path/hlcc/bad_slides_anonymized.txt", header=None)[0].tolist()
 
 for cohort, stmt in [
-    ('hlcc', 'gs://n20_10_lung_hd/hd/wsis/wsis/kos/**/*.tiff',),
-    ('tcga', 'gs://n20_10_lung_hd/tcga/wsis/ffpe/luad/*.svs')
+    ('hlcc', 'gs://bucket_path/hlcc/wsis/wsis/kos/**/*.tiff',),
+    ('tcga', 'gs://bucket_path/tcga/wsis/ffpe/luad/*.svs')
 ]:
     uris = [dict(
         wsi_artifact=f"gs://{path}",
@@ -42,9 +42,9 @@ print(df)
 ########## Load Targets ########
 
 files = [
-    {"oncogenic": True, "path": "gs://n20_10_lung_hd/metadata/hlcc_ffpe_oncogenic_mutations.parquet"},
-    {"oncogenic": True, "path": "gs://n20_10_lung_hd/metadata/tcga_ffpe_oncogenic_mutations.parquet"},
-    {"oncogenic": False, "path": "gs://n20_10_lung_hd/metadata/tcga_ffpe_all_mutations.parquet"},
+    {"oncogenic": True, "path": "gs://bucket_path/metadata/hlcc_ffpe_oncogenic_mutations.parquet"},
+    {"oncogenic": True, "path": "gs://bucket_path/metadata/tcga_ffpe_oncogenic_mutations.parquet"},
+    {"oncogenic": False, "path": "gs://bucket_path/metadata/tcga_ffpe_all_mutations.parquet"},
 ]
 
 
@@ -64,4 +64,4 @@ def load_flat(entry):
 
 for file in files:
     df = load_flat(file)
-    df.to_parquet("gs://n20_10_lung_hd/ejc_review/data/mutation", partition_cols=[])
+    df.to_parquet("gs://bucket_path/iteration_n/data/mutation", partition_cols=[])
