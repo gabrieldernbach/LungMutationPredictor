@@ -8,4 +8,4 @@ Our results show that models trained on the sixfold larger HLCC cohort generaliz
 Model explanations reveal that acinar and papillary growth patterns are key in  detecting EGFR mutations, while solid growth patterns and large nuclei are indicative of TP53 mutations. Despite the advancements, mutation prediction cannot replace comprehensive molecular profiling but can serve as a valuable enrichment tool for clinical trials and enhance  understanding of genotype-phenotype correlations.
 
 
-![Alt text](relative%20TP53.png?raw=true "TP53")
+![TP53](TP53.png)
