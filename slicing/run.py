@@ -1,11 +1,10 @@
 from pathlib import Path
-
-from projects.n20_10_hd_lung.ejc_review.utils import srun
+import subprocess
 
 if __name__ == "__main__":
     tag = "gabrieldernbach/histo:wsi_splitter",
     context = f"{Path(__file__).resolve().parent}"
 
-    srun(f"docker build -t {tag} {context}")
-    srun(f"docker push {tag}")
-    srun(f"kubectl apply -f {context}/machine.yaml")
+    subprocess.run(f"docker build -t {tag} {context}".split())
+    subprocess.run(f"docker push {tag}")
+    subprocess.run(f"kubectl apply -f {context}/machine.yaml")
