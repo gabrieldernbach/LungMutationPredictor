@@ -37,11 +37,10 @@ if __name__ == "__main__":
         for dev_fold, test_fold in permutations(range(5), 2)
         for train_cohort, holdout_cohort in permutations(["tcga", "hlcc"], 2)
         for seed in range(3)
-        for variant_calling in [True]
+        for variant_calling in [True, False]
         for embedder_uuid in [
-            "71291d78-02b3-48ae-bd1a-7e37c012e879",
-            "...",
-            "...",
+            "71291d78-02b3-48ae-bd1a-7e37c012e879",  # UNI
+            "364a917b-deff-4aad-ab78-49bce116713e", # CTRANSPATH
         ]
     ]
 
