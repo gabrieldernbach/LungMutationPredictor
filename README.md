@@ -7,5 +7,7 @@ This retrospective study systematically evaluates factors influencing the accura
 Our results show that models trained on the sixfold larger HLCC cohort generalize well to the TCGA dataset for mutations in EGFR (AUC 0.76), STK11 (AUC 0.71) and TP53 (AUC 0.75). This supports the hypothesis that cohort sizes improve model robustness. Our benchmark highlights performance variations due to preprocessing and modeling choices, such as mutation variant calling, which can cause changes of up to 7% in EGFR prediction accuracy. 
 Model explanations reveal that acinar and papillary growth patterns are key in  detecting EGFR mutations, while solid growth patterns and large nuclei are indicative of TP53 mutations. Despite the advancements, mutation prediction cannot replace comprehensive molecular profiling but can serve as a valuable enrichment tool for clinical trials and enhance  understanding of genotype-phenotype correlations.
 
-
+Example heatmaps for predicting mutations in EGFR. Acinar and papillary growth patterns are targeted
+![EGFR](EGFR.png)
+Example heatmaps for predicting mutations in TP53. High attention patches often contain solid growth pattern.
 ![TP53](TP53.png)
