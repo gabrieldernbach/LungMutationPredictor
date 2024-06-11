@@ -12,5 +12,14 @@ Example heatmaps for predicting mutations in EGFR. Acinar and papillary growth p
 Example heatmaps for predicting mutations in TP53. High attention patches often contain solid growth pattern.
 ![TP53](TP53.png)
 
-The repository requires take a table of cases with known mutational state and location of their whole slide images and derives the following structure set of tables, including image tiling, image embedding, experiments, the training artifacts, model predictions and their explanations (attention scores). 
+The repository requires a table of cases with known mutational state and location of their whole slide images and derives the following structure set of tables, including image tiling, image embedding, experiments, the training artifacts, model predictions and their explanations (attention scores). 
+The following entity relationship diagram outlines how the data is related and stored.
+Due to the size of thousands of models, each attending to millions of patches, a cloud storage should be considered for storing and retrieving the data.
 ![mermaid-diagram-2024-06-11-173059](er_diagram.svg)
+
+The order of execution is as follows
+* `prepare/register_wsis.py` helps in setting up the required table summarizing mutational state and where to find the whole slide images
+* `slicing/app/main.py` is iterating over the slide and parameterized to a 224sqpix at 0.5 mpp by default. Execution can be significantly be speed up by using parallel instance. Multiple instances can be launched by setting parallelism in the kubernets deployment `machine.yaml`
+* `embedding` packages contains ctranspath and uni embedder, where one retrieval and upload node is launched and multiple embedding services build one backbone.
+* `training/gen_experiment.py` lays out which experiments to run and creates the declarative experiments table that can be executed by launching multiple `run.py` workers using the `16core.yaml`, again parallelism significnatly speeds up runtime. 
+* `evaluation` contains the code for heatmapping, generation of the tile clusters.
