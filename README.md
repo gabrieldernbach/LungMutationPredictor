@@ -14,12 +14,13 @@ Example heatmaps for predicting mutations in TP53. High attention patches often 
 
 The repository requires a table of cases with known mutational states and locations of their whole slide images. From this, the following structure of tables is derived, including:
 
-Image tiling
-Image embedding
-Experiments
-Training artifacts
-Model predictions and their explanations (attention scores)
-The entity relationship diagram below outlines how the data is related and stored.
+* Image tiling
+* Image embedding
+* Experiments
+* Training artifacts
+* Model predictions and their explanations (attention scores)
+* The entity relationship diagram below outlines how the data is related and stored.
+
 
 Due to the vast size of the data—thousands of models each attending to millions of patches—cloud storage should be considered for storing and retrieving the data efficiently.
 ![mermaid-diagram-2024-06-11-173059](er_diagram.svg)
